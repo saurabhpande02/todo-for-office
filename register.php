@@ -2,17 +2,14 @@
 session_start();
 
 // Database configuration
-$servername = "localhost";
-$db_username = "root";
-$db_password = "";
-$dbname = "pro_1todojs";
+require('db.php');
 
 // Enable mysqli exceptions for better error handling
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 try {
     // Create a new mysqli connection
-    $conn = new mysqli($servername, $db_username, $db_password, $dbname);
+    $conn = new mysqli($servername, $username, $password, $dbname);
     $conn->set_charset("utf8mb4"); // Set charset to handle special characters
 } catch (mysqli_sql_exception $e) {
     // Handle connection errors

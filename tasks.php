@@ -1,9 +1,5 @@
 <?php
-session_start();
-if(!isset($_SESSION['user_id'])){
-    header("Location: login.php");
-    exit();
-}
+
 require('db.php');
 
 $edit_id = null;
@@ -95,6 +91,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 $sql = "SELECT * FROM tasks";
 $result = $conn->query($sql);
+// Fetch current date
+$current_date = date('Y-m-d');
 ?>
 <!DOCTYPE html>
 <html>
@@ -110,85 +108,61 @@ $result = $conn->query($sql);
         .export-btn { margin-bottom: 10px; }
         #toggle_form_btn { margin-bottom: 10px; }
         #task_form { display: block; }
-        .container { width: 90%; margin: 20px auto; }
+        .container { width: 96%; margin: 20px auto; }
         .form-group { margin-bottom: 10px; }
         input, select { padding: 5px; width: 200px; }
+/* Width of the scrollbar */
+.dataTables_scrollBody::-webkit-scrollbar {
+    width: 10px;
+    height: 10px; /* For horizontal scrollbars */
+}
+
+/* Track (background) of the scrollbar */
+.dataTables_scrollBody::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+    border-radius: 5px;
+}
+
+/* Thumb (draggable part) of the scrollbar */
+.dataTables_scrollBody::-webkit-scrollbar-thumb {
+    background: #888; 
+    border-radius: 5px;
+}
+
+/* Thumb on hover */
+.dataTables_scrollBody::-webkit-scrollbar-thumb:hover {
+    background: #555; 
+}
+
+/* Optional: Corner where horizontal and vertical scrollbars meet */
+.dataTables_scrollBody::-webkit-scrollbar-corner {
+    background: #f1f1f1;
+}
+
+/* Optional: Buttons on the scrollbar (if any) */
+.dataTables_scrollBody::-webkit-scrollbar-button {
+    background: #ccc;
+    width: 10px;
+    height: 10px;
+    cursor: pointer;
+}
+
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Task Management</h1>
-        <p>Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>! <a href="logout.php">Logout</a></p>
-        <button id="toggle_form_btn">Hide Form</button>
-        <div id="task_form">
-   <form method="post" action="">
-    <table style="width:400px">
-        <tr class="form-group">
-            <td><label for="task_name">Task Name</label></td>
-            <td>
-                <input type="text" id="task_name" name="task_name" placeholder="Task Name" required />
-            </td>
-        </tr>
-        <tr class="form-group">
-            <td><label for="emp_names">Emp Name</label></td>
-            <td>
-                <input type="text" id="emp_names" name="emp_names" placeholder="Emp Names" />
-            </td>
-        </tr>
-        <tr class="form-group">
-            <td><label for="url_links">URLs</label></td>
-            <td>
-                <input type="url" id="url_links" name="url_links" placeholder="URL Links" />
-            </td>
-        </tr>
-        <tr class="form-group">
-            <td><label for="task_date">Task Date</label></td>
-            <td>
-                <input type="date" id="task_date" name="task_date" placeholder="Task Date" required />
-            </td>
-        </tr>
-        <tr class="form-group">
-            <td><label for="deadline_date">Task Deadline Date</label></td>
-            <td>
-                <input type="date" id="deadline_date" name="deadline_date" placeholder="Deadline Date" required />
-            </td>
-        </tr>
-        <tr class="form-group">
-            <td><label for="status">Task Status</label></td>
-            <td>
-                <select id="status" name="status">
-                    <option value="---" selected>---</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Approval Pending">Approval Pending</option>
-                    <option value="Working">Working</option>
-                    <option value="Assets Pending">Assets Pending</option>
-                    <option value="Content Pending">Content Pending</option>
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                <input type="submit" name="submit_btn" value="Add Task" />
-            </td>
-        </tr>
-    </table>
-</form>
-
-        </div>
-        <form method="post" action="">
-            <input type="submit" name="export_csv" value="Export to CSV" class="export-btn" />
-        </form>
-        <h2>Task List</h2>
-        <table id="tasks_table" class="display">
+       <img src="img/mycompany-logo.png" width="199px" height="36px" />
+        <h2>My Task<span style='font-size:30px;'>&#128526;</span></h2>
+        <table id="tasks_table" class="display nowrap cell-border" style="width:100%">
             <thead>
                 <tr>
                     <th>SR NO.</th>
                     <th>Task</th>
+                    <th>Status</th>
                     <th>Date</th>
                     <th>Deadline</th>
                     <th>Emp Names</th>
                     <th>URLS</th>
-                    <th>Status</th>
                     <th>Last Updated</th>
                     <th>Actions</th>
                 </tr>
@@ -237,13 +211,14 @@ $result = $conn->query($sql);
                                 </td>";
                         } else {
                             echo "<td>" . htmlspecialchars($row['task_name']) . "</td>";
+                                                        echo "<td>" . htmlspecialchars($row['status']) . "</td>";
                             echo "<td>" . htmlspecialchars($row['task_date']) . "</td>";
                             echo "<td>" . htmlspecialchars($row['deadline_date']) . "</td>";
                             echo "<td>" . htmlspecialchars($row['emp_names']) . "</td>";
                             echo "<td>" . htmlspecialchars($row['url_links']) . "</td>";
 
 
-                            echo "<td>" . htmlspecialchars($row['status']) . "</td>";
+
                             echo "<td>" . htmlspecialchars($row['updated_at']) . "</td>";
                             echo "<td>
                                     <form method='post' style='display:inline;'>
@@ -264,8 +239,11 @@ $result = $conn->query($sql);
         </table>
     </div>
 <div class="container">
-<a href="tasks.php">VIEW TASK</a>
+<a href="index.php">ADD TASK</a>
 </div>
+     <form method="post" action="">
+            <input type="submit" name="export_csv" value="Export to CSV" class="export-btn" />
+        </form>
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <!-- DataTables JS -->
@@ -283,6 +261,9 @@ $result = $conn->query($sql);
                 }
             });
         });
+        new DataTable('#tasks_table', {
+    scrollX: true
+});
     </script>
 </body>
 </html>
